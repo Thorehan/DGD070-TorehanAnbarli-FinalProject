@@ -39,7 +39,13 @@ public class PadSystem : IExecuteSystem
                 if (gameStateEntity.gameState.activatedPadsCount >= 4)
                 {
                     gameStateEntity.ReplaceGameState(true, gameStateEntity.gameState.activatedPadsCount);
-                    Debug.Log("A WINRAR IS YOU");
+
+                    var winTextEntity = _context.GetGroup(GameMatcher.WinText).GetSingleEntity();
+                    if (winTextEntity != null && winTextEntity.winText.textMesh != null)
+                    {
+                        winTextEntity.winText.textMesh.gameObject.SetActive(true);
+                        winTextEntity.winText.textMesh.text = "A WINRAR IS YOU";
+                    }
                 }
             }
         }

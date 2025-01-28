@@ -1,8 +1,11 @@
 using UnityEngine;
 using Entitas;
+using TMPro;
 
 public class GameController : MonoBehaviour
 {
+    [SerializeField] private TextMeshProUGUI winTextMesh;
+
     private Systems _systems;
     private Contexts _contexts;
 
@@ -46,6 +49,10 @@ public class GameController : MonoBehaviour
 
         var gameState = _contexts.game.CreateEntity();
         gameState.AddGameState(false, 0);
+
+        var winTextEntity = _contexts.game.CreateEntity();
+        winTextEntity.AddWinText(winTextMesh);
+        winTextMesh.gameObject.SetActive(false);
     }
 
     private void CreatePad(Vector3 position)

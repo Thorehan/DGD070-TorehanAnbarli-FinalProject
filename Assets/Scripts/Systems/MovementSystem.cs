@@ -5,15 +5,23 @@ public class MovementSystem : IExecuteSystem
 {
     private readonly IGroup<GameEntity> _players;
     private readonly GameContext _context;
+    private readonly IGroup<GameEntity> _gameStates;
 
     public MovementSystem(Contexts contexts)
     {
         _context = contexts.game;
         _players = _context.GetGroup(GameMatcher.AllOf(GameMatcher.Player, GameMatcher.Position, GameMatcher.MovementSpeed));
+        _gameStates = _context.GetGroup(GameMatcher.GameState);
     }
 
     public void Execute()
     {
+        var gameState = _gameStates.GetSingleEntity();
+        if (gameState != null && gameState.gameState.isGameWon)
+        {
+            return;
+        }
+
         foreach (var entity in _players)
         {
             var position = entity.position.value;
@@ -32,4 +40,4 @@ public class MovementSystem : IExecuteSystem
             entity.ReplacePosition(newPosition);
         }
     }
-} 
+}
