@@ -3,41 +3,45 @@ using UnityEngine;
 
 public class MovementSystem : IExecuteSystem
 {
-    private readonly IGroup<GameEntity> _players;
-    private readonly GameContext _context;
-    private readonly IGroup<GameEntity> _gameStates;
+    IGroup<GameEntity> players;
+    GameContext context;
+    IGroup<GameEntity> gameStates;
 
     public MovementSystem(Contexts contexts)
     {
-        _context = contexts.game;
-        _players = _context.GetGroup(GameMatcher.AllOf(GameMatcher.Player, GameMatcher.Position, GameMatcher.MovementSpeed));
-        _gameStates = _context.GetGroup(GameMatcher.GameState);
+        context = contexts.game;
+        players = context.GetGroup(GameMatcher.AllOf(
+            GameMatcher.Player,
+            GameMatcher.Position,
+            GameMatcher.MovementSpeed));
+        gameStates = context.GetGroup(GameMatcher.GameState);
     }
 
     public void Execute()
     {
-        var gameState = _gameStates.GetSingleEntity();
+        var gameState = gameStates.GetSingleEntity();
         if (gameState != null && gameState.gameState.isGameWon)
         {
             return;
         }
 
-        foreach (var entity in _players)
+        foreach (var e in players)
         {
-            var position = entity.position.value;
-            var speed = entity.movementSpeed.value;
-            var boundary = entity.boundary;
+            float h = Input.GetAxisRaw("Horizontal");
+            float v = Input.GetAxisRaw("Vertical");
 
-            float horizontal = Input.GetAxisRaw("Horizontal");
-            float vertical = Input.GetAxisRaw("Vertical");
+            Vector3 hareket = new Vector3(h, 0, v);
+            hareket = hareket.normalized * e.movementSpeed.value * Time.deltaTime;
 
-            Vector3 movement = new Vector3(horizontal, 0f, vertical).normalized * speed * Time.deltaTime;
-            Vector3 newPosition = position + movement;
+            Vector3 yeniPozisyon = e.position.value + hareket;
 
-            newPosition.x = Mathf.Clamp(newPosition.x, boundary.minX, boundary.maxX);
-            newPosition.z = Mathf.Clamp(newPosition.z, boundary.minZ, boundary.maxZ);
+            if (e.hasBoundary)
+            {
+                yeniPozisyon.x = Mathf.Clamp(yeniPozisyon.x, e.boundary.minX, e.boundary.maxX);
+                yeniPozisyon.z = Mathf.Clamp(yeniPozisyon.z, e.boundary.minZ, e.boundary.maxZ);
+            }
 
-            entity.ReplacePosition(newPosition);
+            e.ReplacePosition(yeniPozisyon);
         }
     }
 }
